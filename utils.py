@@ -14,6 +14,7 @@ current_dir = os.getcwd()
 project_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
 data_dir_citation = os.path.join(current_dir, "data/citation_datasets")
 
+
 def parse_index_file(filename):
     """Parse index file."""
     index = []
@@ -109,7 +110,7 @@ def load_data(dataset_str):
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
 
-    return adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask
+    return adj, features, labels, y_train, y_val, y_test, train_mask, val_mask, test_mask
 
 
 def sparse_to_tuple(sparse_mx):
