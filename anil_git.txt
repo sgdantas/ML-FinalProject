@@ -1,2 +1,31 @@
+At the beginning, always pull
+
+git fetch
+git pull origin master
+
+
+While you are working if you want to see what you have changed
+
+git status
+
+Once you are done working on something
+
 git add -u
-# This is to add already existing files ()
+# This is to add already existing files (update)
+git add -A
+# This is to add a new file
+git add name_file
+# to add specific file
+
+Then you commit 
+
+git commit -m "comments on what you have "
+
+and then 
+
+git push origin master
+# to push your changes
+
+
+
+
