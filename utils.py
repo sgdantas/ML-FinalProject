@@ -165,10 +165,8 @@ def construct_feed_dict(features, support, labels, labels_mask, sub_sampled_supp
     feed_dict.update({placeholders['labels']: labels})
     feed_dict.update({placeholders['labels_mask']: labels_mask})
     feed_dict.update({placeholders['features']: features})
-    feed_dict.update({placeholders['support'][i]: support[i] for i in range(len(support))})
-    feed_dict.update(
-        {placeholders['sub_sampled_support'][i]: sub_sampled_support[i]
-         for i in range(len(sub_sampled_support))})
+    feed_dict.update({placeholders['adjacency']: support})
+    feed_dict.update({placeholders['adjacency']: sub_sampled_support})
     feed_dict.update({placeholders['num_features_nonzero']: features[1].shape})
     return feed_dict
 
