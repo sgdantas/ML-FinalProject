@@ -38,7 +38,7 @@ test_split.get_n_splits(labels, labels)
 results_cross_validation = np.zeros((NUM_CROSS_VAL,))
 i = 0
 for train_index, test_index in test_split.split(labels, labels):
-   
+
     train_mask = np.zeros(n, dtype=bool)
     val_mask = np.zeros(n, dtype=bool)
     test_mask = np.zeros(n, dtype=bool)
@@ -53,11 +53,10 @@ for train_index, test_index in test_split.split(labels, labels):
     y_train[train_mask, :] = labels[train_mask, :]
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
-   
+
     # Semi supervised, hide a percentage of training labels
-   
+
     train_mask = get_train_mask(LABEL_TRAINING_PERCENT, y_train, train_index[0:1208], maintain_label_balance=True)
-    
 
     # Define placeholders
     placeholders = {
@@ -70,8 +69,8 @@ for train_index, test_index in test_split.split(labels, labels):
         'num_features_nonzero':
             tf.placeholder(tf.int32)  # helper variable for sparse dropout
     }
-    
-    support = preprocess_adj(adj)
+
+    adjacency = preprocess_adj(adj)
     # Create model
     model = GCNN(placeholders, input_dim=features[2][1])
 
@@ -79,9 +78,9 @@ for train_index, test_index in test_split.split(labels, labels):
     sess = tf.Session()
 
     # Define model evaluation function
-    def evaluate(features, support, labels, mask, sub_sampled_support, placeholders):
+    def evaluate(features, adjacency, labels, mask, placeholders):
         t_test = time.time()
-        feed_dict_val = construct_feed_dict(features, support, labels, mask, sub_sampled_support, placeholders)
+        feed_dict_val = construct_feed_dict(features, adjacency, labels, mask, adjacency, placeholders)
         outs_val = sess.run([model.loss, model.accuracy, model.predict()], feed_dict=feed_dict_val)
         return outs_val[0], outs_val[1], (time.time() - t_test), outs_val[2]
 
@@ -95,12 +94,12 @@ for train_index, test_index in test_split.split(labels, labels):
 
         t = time.time()
         # Construct feed dictionary
-        feed_dict = construct_feed_dict(features, support, y_train, train_mask, support, placeholders)
+        feed_dict = construct_feed_dict(features, adjacency, y_train, train_mask, adjacency, placeholders)
         feed_dict.update({placeholders['dropout']: FLAGS.dropout})
         # Training step
         outs = sess.run([model.opt_op, model.loss, model.accuracy], feed_dict=feed_dict)
         # Validation
-        cost, acc, duration, _ = evaluate(features, support, y_val, val_mask, support, placeholders)
+        cost, acc, duration, _ = evaluate(features, adjacency, y_val, val_mask, placeholders)
         cost_val.append(cost)
         if VERBOSE_TRAINING:
             # Print results
@@ -116,9 +115,9 @@ for train_index, test_index in test_split.split(labels, labels):
     print("Optimization Finished!")
 
     # Testing
-    test_cost, test_acc, test_duration, predicted_labels = evaluate(features, support, y_test, test_mask, support,
+    test_cost, test_acc, test_duration, predicted_labels = evaluate(features, adjacency, y_test, test_mask,
                                                                     placeholders)
-    print("Cross Val:", str(i+1), "Test set results:", "cost=", "{:.5f}".format(test_cost), "accuracy=",
+    print("Cross Val:", str(i + 1), "Test set results:", "cost=", "{:.5f}".format(test_cost), "accuracy=",
           "{:.5f}".format(test_acc), "time=", "{:.5f}".format(test_duration))
     labels_equal = (np.equal(np.argmax(predicted_labels, axis=1), np.argmax(y_test, axis=1)))
     list_node_correctly_classified = np.argwhere(labels_equal).reshape(-1)

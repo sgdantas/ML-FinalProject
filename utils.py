@@ -159,14 +159,14 @@ def preprocess_adj(adj):
     return sparse_to_tuple(adj_normalized)
 
 
-def construct_feed_dict(features, support, labels, labels_mask, sub_sampled_support, placeholders):
+def construct_feed_dict(features, adjacency, labels, labels_mask, masked_adjacency, placeholders):
     """Construct feed dictionary."""
     feed_dict = dict()
     feed_dict.update({placeholders['labels']: labels})
     feed_dict.update({placeholders['labels_mask']: labels_mask})
     feed_dict.update({placeholders['features']: features})
-    feed_dict.update({placeholders['adjacency']: support})
-    feed_dict.update({placeholders['adjacency']: sub_sampled_support})
+    feed_dict.update({placeholders['adjacency']: adjacency})
+    feed_dict.update({placeholders['masked_adjacency']: masked_adjacency})
     feed_dict.update({placeholders['num_features_nonzero']: features[1].shape})
     return feed_dict
 

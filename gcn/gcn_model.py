@@ -63,7 +63,7 @@ class GCNN(object):
                     input_dim=FLAGS.hidden1,
                     output_dim=self.output_dim,
                     placeholders=self.placeholders,
-                    support=self.placeholders['adjacency'],
+                    support=self.placeholders['masked_adjacency'],
                     act=lambda x: x,
                     dropout=True,
                     logging=self.logging))
