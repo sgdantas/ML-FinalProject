@@ -60,7 +60,9 @@ def set_tf_flags(params, flags):
     flags.DEFINE_string('dataset', params['dataset'], 'Dataset string.')
     flags.DEFINE_integer('epochs', params['epochs'], 'Number of epochs to train.')
     flags.DEFINE_float('learning_rate', params['learning_rate'], 'Initial learning rate.')
-    flags.DEFINE_integer('hidden1', params['hidden1'], 'Number of units in hidden layer 1.')
     flags.DEFINE_float('weight_decay', params['weight_decay'], 'Weight for L2 loss on embedding matrix.')
-    flags.DEFINE_float('dropout', params['dropout'], 'Dropout rate (1 - keep probability).')
     flags.DEFINE_integer('early_stopping', params['early_stopping'], 'Tolerance for early stopping (# of epochs).')
+    
+    flags.DEFINE_float('dropout', params['dropout'], 'Dropout rate (1 - keep probability).')
+    flags.DEFINE_integer('hidden1', params['hidden1'], 'Number of units in hidden layer 1.')
+

@@ -7,7 +7,7 @@ FLAGS = flags.FLAGS
 
 class GCNN(object):
 
-    def __init__(self, placeholders, input_dim):
+    def __init__(self, placeholders, input_dim, hidden=None):
         self.vars = {}
         self.placeholders = {}
         self.logging = True
@@ -17,7 +17,7 @@ class GCNN(object):
 
         self.inputs = None
         self.outputs = None
-
+        self.hidden = hidden
         self.loss = 0
         self.accuracy = 0
         self.optimizer = None
@@ -46,11 +46,13 @@ class GCNN(object):
         self.accuracy = masked_accuracy(self.outputs, self.placeholders['labels'], self.placeholders['labels_mask'])
 
     def build(self):
+        if self.hidden is None:
+            self.hidden = FLAGS.hidden1
         with tf.variable_scope(self.name):
             self.layers.append(
                 GraphConvolution(
                     input_dim=self.input_dim,
-                    output_dim=FLAGS.hidden1,
+                    output_dim=self.hidden,
                     placeholders=self.placeholders,
                     support=self.placeholders['adjacency'],
                     act=tf.nn.relu,
@@ -60,7 +62,7 @@ class GCNN(object):
 
             self.layers.append(
                 GraphConvolution(
-                    input_dim=FLAGS.hidden1,
+                    input_dim=self.hidden,
                     output_dim=self.output_dim,
                     placeholders=self.placeholders,
                     support=self.placeholders['masked_adjacency'],

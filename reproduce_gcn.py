@@ -12,13 +12,13 @@ from gcn.subsample import get_train_mask
 
 SEED = 125
 NUM_CROSS_VAL = 10
-dataset_str = "cora"  # or citeseer
+dataset_str = "citeseer"  # or citeseer
 VERBOSE_TRAINING = False
 LABEL_TRAINING_PERCENT = 27
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-settings = graph_settings()['default']
+settings = graph_settings()['quick']
 set_tf_flags(settings['params'], flags)
 
 # Set random seed

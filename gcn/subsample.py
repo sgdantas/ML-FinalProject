@@ -8,22 +8,22 @@ from itertools import compress
 
 
 #remove columns from adj matrix.
-#TODO needs additional scaling?
 #Be carefull too not modify the initial complete support matrix
-def get_sub_sampled_support(complete_support, node_to_keep):
-    index_array = complete_support[0][:]  # make a copy to avoid modifying complete support
-    values = np.zeros(complete_support[1].shape)
+def get_masked_adj(adj, node_to_keep):
+    
+    index_array = adj[0][:]  # make a copy to avoid modifying complete support
+    values = np.zeros(adj[1].shape)
     index_array_sorted = index_array[:, 1].argsort()
     j = 0
     node_to_keep.sort()
     for index_to_keep in node_to_keep:
         while (j < len(index_array_sorted) and index_to_keep >= index_array[index_array_sorted[j]][1]):
             if (index_to_keep == index_array[index_array_sorted[j]][1]):
-                values[index_array_sorted[j]] = complete_support[1][index_array_sorted[j]]
+                values[index_array_sorted[j]] = adj[1][index_array_sorted[j]]
             j += 1
-    sub_sampled_support = (index_array, values, complete_support[2])
+    masked_adj = (index_array, values, adj[2])
 
-    return sub_sampled_support
+    return masked_adj
 
 
 # Return a train mask for label_percent of the trainig set.
