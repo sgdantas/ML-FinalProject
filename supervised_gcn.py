@@ -8,10 +8,12 @@ import numpy as np
 from settings import set_tf_flags, graph_settings
 import time
 from sklearn.model_selection import StratifiedShuffleSplit
+from gcn.subsample import get_train_mask
 
 SEED = 125
 dataset_str = "cora"  # or citeseer
 VERBOSE_TRAINING = False
+LABEL_TRAINING_PERCENT = 100
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -24,6 +26,7 @@ np.random.seed(SEED)
 
 # Load the data/labels/adjacency matrix
 adj, features, labels, y_train, y_val, y_test, train_mask, val_mask, test_mask = load_data(dataset_str)
+
 n = features.shape[0]
 # Preprocess the features
 features = preprocess_features(features)
@@ -38,7 +41,7 @@ for train_index, test_index in test_split.split(labels, labels):
     train_mask = np.zeros(n, dtype=bool)
     val_mask = np.zeros(n, dtype=bool)
     test_mask = np.zeros(n, dtype=bool)
-
+    
     train_mask[train_index[0:1208]] = True
     val_mask[train_index[1208:]] = True
     test_mask[test_index] = True
@@ -53,9 +56,7 @@ for train_index, test_index in test_split.split(labels, labels):
     y_train[train_mask, :] = labels[train_mask, :]
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
-
     
-
     # Define placeholders
     placeholders = {
         'masked_adjacency': tf.sparse_placeholder(tf.float32),
@@ -67,7 +68,7 @@ for train_index, test_index in test_split.split(labels, labels):
         'num_features_nonzero':
             tf.placeholder(tf.int32)  # helper variable for sparse dropout
     }
-
+    
     support = preprocess_adj(adj)
     # Create model
     model = GCNN(placeholders, input_dim=features[2][1])
@@ -115,14 +116,14 @@ for train_index, test_index in test_split.split(labels, labels):
     # Testing
     test_cost, test_acc, test_duration, predicted_labels = evaluate(features, support, y_test, test_mask, support,
                                                                     placeholders)
-    print("Cross Val:",str(i),"Test set results:", "cost=", "{:.5f}".format(test_cost), "accuracy=", "{:.5f}".format(test_acc), "time=",
-          "{:.5f}".format(test_duration))
+    print("Cross Val:", str(i+1), "Test set results:", "cost=", "{:.5f}".format(test_cost), "accuracy=",
+          "{:.5f}".format(test_acc), "time=", "{:.5f}".format(test_duration))
     labels_equal = (np.equal(np.argmax(predicted_labels, axis=1), np.argmax(y_test, axis=1)))
     list_node_correctly_classified = np.argwhere(labels_equal).reshape(-1)
     list_node_correctly_classified_test = list(filter(lambda x: test_mask[x], list(list_node_correctly_classified)))
     results_cross_validation[i] = test_acc
-    i+=1
+    i += 1
     tf.reset_default_graph()
 
-print("Average Accuracy:","{:.3f}".format(np.average(results_cross_validation)),"+/-","{:.3f}".format(np.std(results_cross_validation)))
-
+print("Average Accuracy:", "{:.3f}".format(np.average(results_cross_validation)), "+/-", "{:.3f}".format(
+    np.std(results_cross_validation)))
