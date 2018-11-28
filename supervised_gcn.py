@@ -11,7 +11,7 @@ from sklearn.model_selection import StratifiedShuffleSplit
 from gcn.subsample import get_masked_adj
 
 SEED = 125
-NUM_CROSS_VAL = 3
+NUM_CROSS_VAL = 10
 dataset_str = "cora"  # or citeseer
 VERBOSE_TRAINING = False
 
@@ -19,7 +19,12 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 settings = graph_settings()['default']
 set_tf_flags(settings['params'], flags)
-list_hyperparams = [(0.5, 16), (0.5, 32), (0, 4)]
+dropout_params = [0,0.25,0.5]
+num_hiddens = [np.power(2,i) for i in range(2,7)]
+list_hyperparams = []
+for d in dropout_params:
+    for n_h in num_hiddens:
+        list_hyperparams.append((d,n_h))
 # Set random seed
 tf.set_random_seed(SEED)
 np.random.seed(SEED)
