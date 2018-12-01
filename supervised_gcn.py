@@ -9,6 +9,7 @@ from settings import set_tf_flags, graph_settings
 import time
 from sklearn.model_selection import StratifiedShuffleSplit
 from gcn.subsample import get_masked_adj
+from utils import sparse_to_tuple
 
 SEED = 125
 NUM_CROSS_VAL = 10
@@ -19,12 +20,12 @@ flags = tf.app.flags
 FLAGS = flags.FLAGS
 settings = graph_settings()['default']
 set_tf_flags(settings['params'], flags)
-dropout_params = [0,0.25,0.5]
-num_hiddens = [np.power(2,i) for i in range(2,7)]
+dropout_params = [0, 0.25, 0.5]
+num_hiddens = [np.power(2, i) for i in range(2, 7)]
 list_hyperparams = []
 for d in dropout_params:
     for n_h in num_hiddens:
-        list_hyperparams.append((d,n_h))
+        list_hyperparams.append((d, n_h))
 # Set random seed
 tf.set_random_seed(SEED)
 np.random.seed(SEED)
@@ -40,10 +41,11 @@ test_split = StratifiedShuffleSplit(n_splits=NUM_CROSS_VAL, test_size=0.20, rand
 test_split.get_n_splits(labels, labels)
 
 results_cross_validation = np.zeros((NUM_CROSS_VAL,))
+
 i = 0
 for train_index, test_index in test_split.split(labels, labels):
     val_cut = int(len(train_index) * 0.8)
-   
+
     train_mask = np.zeros(n, dtype=bool)
     val_mask = np.zeros(n, dtype=bool)
     test_mask = np.zeros(n, dtype=bool)
@@ -59,10 +61,13 @@ for train_index, test_index in test_split.split(labels, labels):
     y_val[val_mask, :] = labels[val_mask, :]
     y_test[test_mask, :] = labels[test_mask, :]
 
+    masked_adjacency = get_masked_adj(adj, train_index[0:val_cut])
+    masked_adjacency = preprocess_adj(masked_adjacency)
     adjacency = preprocess_adj(adj)
-    #Remove links for the first adjaecncy
-    masked_adjacency = get_masked_adj(adjacency, train_index[0:val_cut])
-    
+
+    # masked_adjacency = preprocess_adj(masked_adjacency)
+    #Remove links for the first adjacency
+
     hyperparam_search = []
 
     # Define model evaluation function
@@ -126,7 +131,7 @@ for train_index, test_index in test_split.split(labels, labels):
 
     best_hidden = list_hyperparams[np.argmax(hyperparam_search)][1]
     best_dropout = list_hyperparams[np.argmax(hyperparam_search)][0]
-    
+
     # Run with best Hyperparam
     placeholders = {
         'masked_adjacency': tf.sparse_placeholder(tf.float32),

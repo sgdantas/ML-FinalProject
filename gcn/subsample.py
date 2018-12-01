@@ -3,27 +3,18 @@ import time
 import numpy as np
 import copy
 from itertools import compress
-
+import scipy.sparse as sp
 #random.seed(123)
 
 
 #remove columns from adj matrix.
 #Be carefull too not modify the initial complete support matrix
 def get_masked_adj(adj, node_to_keep):
-    
-    index_array = adj[0][:]  # make a copy to avoid modifying complete support
-    values = np.zeros(adj[1].shape)
-    index_array_sorted = index_array[:, 1].argsort()
-    j = 0
-    node_to_keep.sort()
-    for index_to_keep in node_to_keep:
-        while (j < len(index_array_sorted) and index_to_keep >= index_array[index_array_sorted[j]][1]):
-            if (index_to_keep == index_array[index_array_sorted[j]][1]):
-                values[index_array_sorted[j]] = adj[1][index_array_sorted[j]]
-            j += 1
-    masked_adj = (index_array, values, adj[2])
-
-    return masked_adj
+    dense_adj = sp.csc_matrix.toarray(adj)
+    masked_adj = np.zeros(dense_adj.shape)
+    masked_adj[:, node_to_keep] = dense_adj[:, node_to_keep]
+   
+    return sp.csc_matrix(masked_adj)
 
 
 # Return a train mask for label_percent of the trainig set.
