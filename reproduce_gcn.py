@@ -18,7 +18,7 @@ LABEL_TRAINING_PERCENT = 27
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
-settings = graph_settings()['quick']
+settings = graph_settings()['default']
 set_tf_flags(settings['params'], flags)
 
 # Set random seed
